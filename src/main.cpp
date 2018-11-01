@@ -35,14 +35,14 @@ public:
       bp.setAccentuatedPattern(vector<bool>{true, false, false, false});
 
       // set commands for the repl
-      commandlist_t commands;
-      commands.emplace("exit", [this](string&) { this->repl.stop(); });
-      commands.emplace("start", [this](string&) { this->bp.start(); });
-      commands.emplace("stop", [this](string&) {
+      repl.addCommand("exit", [this]() { this->repl.stop(); });
+      repl.addCommand("start", [this]() { this->bp.start(); });
+      repl.addCommand("stop", [this]() {
          this->bp.stop();
          this->bp.waitForStop();
       });
-      commands.emplace("bpm", [this](string& s) {
+
+      repl.addCommand("bpm", [this](string s) {
          size_t bpm      = !s.empty() ? stoul(s, nullptr, 10) : 80;
          bool wasRunning = bp.isRunning();
          if (wasRunning) {
@@ -54,7 +54,8 @@ public:
             this->bp.start();
          }
       });
-      commands.emplace("pattern", [this](string& s) {
+
+      repl.addCommand("pattern", [this](string s) {
          if ((s.find('*') != string::npos) || (s.find('+') != string::npos)) {
             vector<bool> pattern;
             for (char c : s) {
@@ -78,7 +79,18 @@ public:
       });
 
 
-      repl.setCommands(commands);
+      repl.addCommand("test", [](string a, string b) {
+         std::cout << "a " << a;
+         std::cout << "b " << b;
+      });
+
+      repl.addCommand("test2", [](std::vector<std::tuple<string, string>> strings) {
+         int i = 0;
+         for (auto [a, b] : strings) {
+            cout << i++ << ": " << a << " & " << b << endl;
+         }
+      });
+
       repl.start();
    }
 

@@ -28,7 +28,22 @@ class ForbiddenCommandExecption : exception
 };
 
 
-Repl::Repl() : myThread{nullptr}, requestStop{false} {}
+Repl::Repl() : myThread{nullptr}, requestStop{false}
+{
+   addCommand("help", [this]() {
+      std::cout << "all commands:" << std::endl;
+      for (auto c : commands) {
+         std::string help;
+         try {
+            help = " " + commandHelp.at(c.first);
+         }
+         catch (const std::out_of_range&) {
+         }
+         std::cout << "  " << c.first << help << std::endl;
+      }
+   });
+}
+
 Repl::Repl(commandlist_t& cmds) : commands{cmds}, myThread{nullptr}, requestStop{false} {}
 
 Repl::~Repl()
@@ -37,7 +52,7 @@ Repl::~Repl()
    waitForStop();
 }
 
-void Repl::setCommands(const commandlist_t& cmds) { commands = cmds; }
+void Repl::setCommands(const commandlist_t& cmds) { commands.insert(cmds.begin(), cmds.end()); }
 
 void Repl::start()
 {
@@ -64,6 +79,9 @@ void Repl::waitForStop() const
 void Repl::run()
 {
    string input;
+
+   cout << "you can get help with 'help'" << endl;
+
    while (!requestStop) {
       // prompt
       cout << endl;
